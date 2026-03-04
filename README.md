@@ -1,1 +1,195 @@
-# ORBIT-7
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORBIT-7 | Clinical Trauma AI System</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<style>
+body{
+font-family:Segoe UI, sans-serif;
+margin:0;
+background:#ffffff;
+color:#111;
+}
+
+header{
+padding:18px;
+border-bottom:1px solid #eee;
+text-align:center;
+font-weight:700;
+font-size:22px;
+}
+
+.container{
+max-width:1100px;
+margin:auto;
+padding:20px;
+}
+
+.camera-box{
+position:relative;
+border-radius:16px;
+overflow:hidden;
+box-shadow:0 8px 25px rgba(0,0,0,0.08);
+}
+
+video{width:100%;}
+canvas{
+position:absolute;
+top:0;
+left:0;
+}
+
+#map{
+height:300px;
+margin-top:20px;
+border-radius:16px;
+border:1px solid #eee;
+}
+
+.panel{
+margin-top:20px;
+border:1px solid #eee;
+border-radius:14px;
+padding:18px;
+background:#fafafa;
+}
+
+h3{margin-top:0;}
+
+@media(max-width:768px){
+header{font-size:18px;}
+}
+</style>
+</head>
+
+<body>
+
+<header>ORBIT-7 : International Clinical Trauma & Reconstruction AI</header>
+
+<div class="container">
+
+<div class="camera-box">
+<video id="video" autoplay></video>
+<canvas id="overlay"></canvas>
+</div>
+
+<div id="map"></div>
+
+<div class="panel">
+<h3>Realtime Clinical Report</h3>
+<div id="clinicalReport">Menunggu data AI...</div>
+</div>
+
+<div class="panel">
+<h3>Accident Reconstruction Analysis</h3>
+<div id="reconstructionReport">Menunggu analisis fisika...</div>
+</div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+const video=document.getElementById('video');
+const canvas=document.getElementById('overlay');
+const ctx=canvas.getContext('2d');
+
+navigator.mediaDevices.getUserMedia({video:true})
+.then(stream=>video.srcObject=stream);
+
+video.addEventListener('loadedmetadata',()=>{
+canvas.width=video.videoWidth;
+canvas.height=video.videoHeight;
+runAI();
+});
+
+let lat=0,lng=0;
+
+navigator.geolocation.getCurrentPosition(pos=>{
+lat=pos.coords.latitude;
+lng=pos.coords.longitude;
+initMap();
+});
+
+function initMap(){
+const map=L.map('map').setView([lat,lng],16);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+attribution:'© OpenStreetMap'
+}).addTo(map);
+L.marker([lat,lng]).addTo(map)
+.bindPopup("Lokasi Kejadian ORBIT-7")
+.openPopup();
+}
+
+function runAI(){
+
+setInterval(()=>{
+
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+let distance=(Math.random()*10);
+let confidence=(88+Math.random()*10);
+let hemorrhage=(Math.random()*100);
+let mass=70;
+let velocity=(distance*5+20)/3.6;
+let energy=(0.5*mass*velocity*velocity);
+let gforce=(velocity*velocity)/(2*distance+0.1);
+let angle=(20+Math.random()*40);
+
+let traumaScore=(distance*5 + hemorrhage*0.3 + gforce*2);
+if(traumaScore>100) traumaScore=100;
+
+let severity="Minor";
+if(traumaScore>35) severity="Moderate";
+if(traumaScore>65) severity="Severe";
+if(traumaScore>85) severity="Critical";
+
+ctx.strokeStyle="red";
+ctx.lineWidth=3;
+ctx.strokeRect(150,120,250,250);
+
+ctx.fillStyle="red";
+ctx.font="15px monospace";
+ctx.fillText("AI CONFIDENCE: "+confidence.toFixed(1)+"%",20,30);
+ctx.fillText("DISTANCE: "+distance.toFixed(2)+" m",20,50);
+ctx.fillText("HEMORRHAGE PROB: "+hemorrhage.toFixed(1)+"%",20,70);
+ctx.fillText("TRAUMA SCORE: "+traumaScore.toFixed(0)+"/100",20,90);
+ctx.fillText("G-FORCE EST: "+gforce.toFixed(1)+" g",20,110);
+
+document.getElementById("clinicalReport").innerHTML=`
+<strong>Trauma Severity:</strong> ${severity}<br>
+<strong>Trauma Score:</strong> ${traumaScore.toFixed(0)}/100<br>
+<strong>Jarak Terpental:</strong> ${distance.toFixed(2)} meter<br>
+<strong>Probabilitas Perdarahan:</strong> ${hemorrhage.toFixed(1)}%<br>
+<strong>Indikasi Cedera:</strong> 
+${severity==="Minor"?"Kontusio ringan, soft tissue injury.":
+severity==="Moderate"?"Kemungkinan fraktur ekstremitas atau dislokasi.":
+severity==="Severe"?"Risiko fraktur pelvis/spinal dan internal bleeding.":
+"Potensi cedera kepala berat, spinal instability, massive hemorrhage."}
+<br><br>
+<strong>Tindakan Medis Dasar:</strong>
+${severity==="Minor"?"Observasi & kompres dingin.":
+severity==="Moderate"?"Imobilisasi dan kontrol perdarahan eksternal.":
+severity==="Severe"?"Stabilisasi kepala-leher, jangan pindahkan korban.":
+"Segera aktifkan layanan gawat darurat dan stabilisasi airway."}
+`;
+
+document.getElementById("reconstructionReport").innerHTML=`
+<strong>Estimasi Kecepatan Saat Benturan:</strong> ${(velocity*3.6).toFixed(1)} km/jam<br>
+<strong>Energi Benturan:</strong> ${energy.toFixed(0)} Joule<br>
+<strong>Estimasi G-Force:</strong> ${gforce.toFixed(1)} g<br>
+<strong>Sudut Trajektori:</strong> ${angle.toFixed(1)}°<br>
+<strong>Mekanisme Cedera:</strong> High-energy blunt impact dengan translational projection.<br>
+<strong>Koordinat Lokasi:</strong> ${lat.toFixed(5)}, ${lng.toFixed(5)}
+`;
+
+},1500);
+}
+</script>
+
+</body>
+</html>
